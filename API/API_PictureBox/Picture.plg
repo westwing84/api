@@ -1,0 +1,35 @@
+<html>
+<body>
+<pre>
+<h1>ﾋﾞﾙﾄﾞのﾛｸﾞ</h1>
+<h3>
+--------------------構成: Picture - Win32 Debug--------------------
+</h3>
+<h3>ｺﾏﾝﾄﾞ ﾗｲﾝ</h3>
+Creating command line "rc.exe /l 0x411 /fo"Debug/resource.res" /d "_DEBUG" "C:\use\プログラム\API_Program\ｂ4\Picture\resource.rc"" 
+一時ﾌｧｲﾙ "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP84.tmp" を作成し、次の内容を記録します
+[
+/nologo /MLd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /Fp"Debug/Picture.pch" /YX /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"C:\use\プログラム\API_Program\ｂ4\Picture\main.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP84.tmp" 
+一時ﾌｧｲﾙ "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP85.tmp" を作成し、次の内容を記録します
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /incremental:yes /pdb:"Debug/Picture.pdb" /debug /machine:I386 /out:"Debug/Picture.exe" /pdbtype:sept 
+".\Debug\main.obj"
+".\Debug\resource.res"
+]
+ｺﾏﾝﾄﾞ ﾗｲﾝ "link.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP85.tmp" の作成中
+<h3>ｱｳﾄﾌﾟｯﾄ ｳｨﾝﾄﾞｳ</h3>
+ﾘｿｰｽをｺﾝﾊﾟｲﾙ中...
+ｺﾝﾊﾟｲﾙ中...
+main.cpp
+ﾘﾝｸ中...
+
+
+
+<h3>結果</h3>
+Picture.exe - ｴﾗｰ 0、警告 0
+</pre>
+</body>
+</html>

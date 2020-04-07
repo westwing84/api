@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -13,13 +13,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// 日本語 resources
+// 日本語 (日本) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)
-#ifdef _WIN32
 LANGUAGE LANG_JAPANESE, SUBLANG_DEFAULT
 #pragma code_page(932)
-#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -27,18 +25,35 @@ LANGUAGE LANG_JAPANESE, SUBLANG_DEFAULT
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE 
 BEGIN
     "#include ""afxres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
 BEGIN
     "\r\n"
     "\0"
@@ -53,16 +68,14 @@ END
 //
 
 IDD_MAINDIALOG DIALOGEX 0, 0, 271, 193
-STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "ﾀﾞｲｱﾛｸﾞ"
-FONT 10, "ＭＳ Ｐゴシック"
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "PictureBox"
+FONT 10, "ＭＳ Ｐゴシック", 0, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",ID_OK,215,7,50,22
     PUSHBUTTON      "ｷｬﾝｾﾙ",ID_END,215,164,50,22
-    CONTROL         "",IDC_PICTBOX,"Static",SS_WHITERECT,7,7,204,179,
-                    WS_EX_CLIENTEDGE
-    CONTROL         "赤",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,
-                    227,47,23,10
+    CONTROL         "",IDC_PICTBOX,"Static",SS_WHITERECT,7,7,204,179,WS_EX_CLIENTEDGE
+    CONTROL         "赤",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,227,47,23,10
     CONTROL         "緑",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,227,62,23,10
     CONTROL         "青",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,227,77,23,10
     GROUPBOX        "ブラシ",IDC_STATIC,221,34,32,60,BS_CENTER | WS_GROUP
@@ -75,7 +88,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_MAINDIALOG, DIALOG
     BEGIN
@@ -87,7 +100,18 @@ BEGIN
 END
 #endif    // APSTUDIO_INVOKED
 
-#endif    // 日本語 resources
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_MAINDIALOG AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+#endif    // 日本語 (日本) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

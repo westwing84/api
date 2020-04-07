@@ -80,9 +80,9 @@ BOOL CALLBACK MainDlgProc( HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam )
 		宣言してみましょう．
 	   ********/
 		//ここから
-
-		
-
+		hRadioR = GetDlgItem(hDlg, IDC_RADIO1);
+		hRadioG = GetDlgItem(hDlg, IDC_RADIO2);
+		hRadioB = GetDlgItem(hDlg, IDC_RADIO3);
 
 
 
@@ -103,7 +103,7 @@ BOOL CALLBACK MainDlgProc( HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam )
 			↑を参考にハンドル hPictをGetDlgItem関数を用いて取得しましょう．
 			***********************/
 			//ここから
-											
+			hPict = GetDlgItem(hDlg, IDC_PICTBOX);
 			
 
 
@@ -133,11 +133,15 @@ BOOL CALLBACK MainDlgProc( HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam )
 			return TRUE;
 
 		//ここから
-		
+		case IDC_RADIO2:
+			color = RGB(0, 255, 0);
+			InvalidateRect(hWnd, NULL, TRUE);
+			return TRUE;
 
-
-
-
+		case IDC_RADIO3:
+			color = RGB(0, 0, 255);
+			InvalidateRect(hWnd, NULL, TRUE);
+			return TRUE;
         //ここまで
 		}
 		break;
@@ -236,7 +240,7 @@ HRESULT CALLBACK WndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 		  以上を参考に図形を描画する関数を以下に記述しましょう
 		********************************/
 		//ここから
-
+		Ellipse(hdc, 0, 0, 500, 500);
 		
 
 

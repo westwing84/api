@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <windows.h>		//Windows環境
 #include <windowsx.h>		//Windows環境
+#include <process.h>		//スレッド用
+#include <stdlib.h>
+
+#pragma comment(lib,"winmm.lib")//高精度タイマ
 
 #include "resource.h"		//リソースファイル
 
@@ -29,12 +33,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	hMutex = CreateMutex(NULL, TRUE, DEF_MUTEX_NAME);		//ミューテックスオブジェクトの生成
 	if (GetLastError() == ERROR_ALREADY_EXISTS) {				//2重起動の有無を確認
 		MessageBox(NULL, TEXT("既に起動されています．"), NULL, MB_OK | MB_ICONERROR);
-		return 0;											//終了
-	}
-
-	//データファイルを開く
-	if (fopen_s(&fp, "data.txt", "r")){
-		MessageBox(NULL, TEXT("ファイルを開けませんでした．"), NULL, MB_OK | MB_ICONERROR);
 		return 0;											//終了
 	}
 
@@ -110,7 +108,6 @@ BOOL CALLBACK MainDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			//ここまで	
 			WinInitialize(NULL, hDlg, (HMENU)110, TEXT("TEST1"), hPict1, WndProc, &hWnd); //初期化
-			//WinInitialize関数によって子ウィンドウプロシージャにhPict1がhWnd1としてセットされました．
 			WinInitialize(NULL, hDlg, (HMENU)110, TEXT("TEST2"), hPict2, WndProc, &hWnd);
 			return TRUE;
 

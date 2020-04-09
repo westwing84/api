@@ -1,1 +1,8 @@
-﻿  timer.vcxproj -> C:\Users\tsuba\iCloudDrive\Documents\研究室\新入生課題\API\timer\Debug\timer.exe
+﻿  main.cpp
+C:\Users\tsuba\Documents\GitHub\api\API\timer\timer\main.cpp(125,12): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\tsuba\Documents\GitHub\api\API\timer\timer\main.cpp(142,7): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\tsuba\Documents\GitHub\api\API\timer\timer\main.cpp(150,3): warning C4996: '_gcvt': This function or variable may be unsafe. Consider using _gcvt_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\tsuba\Documents\GitHub\api\API\timer\timer\main.cpp(165,3): warning C4996: '_itoa': This function or variable may be unsafe. Consider using _itoa_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\tsuba\Documents\GitHub\api\API\timer\timer\main.cpp(174,4): warning C4996: 'itoa': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _itoa. See online help for details.
+C:\Users\tsuba\Documents\GitHub\api\API\timer\timer\main.cpp(177,4): warning C4996: 'itoa': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _itoa. See online help for details.
+  timer.vcxproj -> C:\Users\tsuba\Documents\GitHub\api\API\timer\Debug\timer.exe

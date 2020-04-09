@@ -2,10 +2,9 @@
 // Microsoft Visual C++ で生成されたインクルード ファイル。
 // resource.rc で使用
 //
-#define IDD_DIALOG1                     101
 #define IDD_MAINDIALOG                  101
 #define ID_START                        1001
-#define ID_END                          1002
+#define ID_STOP                         1002
 #define IDC_PICTBOX1                    1003
 #define IDC_PICTBOX2                    1004
 

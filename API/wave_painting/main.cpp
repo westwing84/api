@@ -12,14 +12,22 @@
 BOOL CALLBACK MainDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);	//メインダイアログプロシージャ
 BOOL WinInitialize(HINSTANCE hInst, HWND hPaWnd, HMENU chID, LPCTSTR cWinName, HWND PaintArea, WNDPROC WndProc, HWND* hDC);//子ウィンドウを生成
 HRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);		//子ウィンドウプロシージャ
+UINT WINAPI TFunc(LPVOID thParam);												//データ読み込み用スレッド
 
 //定数宣言
 #define DEF_APP_NAME	TEXT("Waveform Test")
-#define DEF_MUTEX_NAME	DEF_APP_NAME			//ミューテックス名
-#define DTMAX 8192
+#define DEF_MUTEX_NAME	DEF_APP_NAME	//ミューテックス名
+#define DTMAX 8192						//データサイズの最大値
+#define DEF_DATAPERS 61.5				//1秒間に何データ入出力するか
 
 static COLORREF	color, colorPen;	//色
 static FILE *fp;
+
+//構造体
+typedef struct {
+	HWND	hwnd;
+	HWND	hEdit;
+}SEND_POINTER_STRUCT;
 
 //======================================
 //ここからダイアログバージョン
@@ -55,36 +63,17 @@ BOOL CALLBACK MainDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	static HWND hPict1, hPict2;		//ウィンドウハンドル（PictureBox）
 	static HWND hWnd;		//子ウィンドウハンドル
-	static HWND hStart;
+	static HANDLE hThread1, hThread2;
+	static UINT thID1, thID2;
+	static SEND_POINTER_STRUCT Sps1, Sps2;
 
 	switch (uMsg) {
 	case WM_INITDIALOG:		//ダイアログ初期化(exeをダブルクリックした時)
-
-
-		/*******
-		システム画面（.rcファイル）に自分で追加したボタンやPicture Control等
-		は必ずHWND型でGetDlgItem関数を用いてハンドルを取得します．
-
-		例：hWnd = GetDlgItem(hDlg, ID);
-		hWnd：取得したいハンドル
-		hDlg：ダイアログのハンドル．ここは基本的にそのまま
-		ID：取得したいハンドルの対象となるボタンやPicture Control等
-			のID．.rcファイルから確認できる．詳細は配布資料を参考
-
-
-
-		ここでヘッダを見てみると，hRadioR・hRadioG・hRadioBというハンドルが宣言
-		されています．
-		これをそれぞれシステム画面上のラジオボタン赤・緑・青に対応するように
-		宣言してみましょう．
-	   ********/
-	   //ここから
-
-
-
-		//ここまで
-
-		SendMessage(hDlg, WM_COMMAND, 0, 0);	//
+		Sps1.hwnd = Sps2.hwnd = hDlg;
+		hPict1 = GetDlgItem(hDlg, IDC_PICTBOX1);
+		hPict2 = GetDlgItem(hDlg, IDC_PICTBOX2);
+		Sps1.hEdit = hPict1;
+		Sps2.hEdit = hPict2;
 		return TRUE;
 
 	case WM_COMMAND:		//ボタンが押された時
@@ -93,28 +82,34 @@ BOOL CALLBACK MainDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	   ********/
 		switch (LOWORD(wParam)) {
 		case ID_START:			//開始ボタン
-			/***********************
-			OKボタンが押されたときに描画を開始します．
-			描画を開始するためにはPictureControlのハンドルを取得する必要があります
-			↑を参考にハンドル hPictをGetDlgItem関数を用いて取得しましょう．
-			***********************/
-			//ここから
-			hStart = GetDlgItem(hDlg, ID_START);
-			EnableWindow(hStart, FALSE);
-			hPict1 = GetDlgItem(hDlg, IDC_PICTBOX1);
-			hPict2 = GetDlgItem(hDlg, IDC_PICTBOX2);
-
-
-
-			//ここまで	
 			WinInitialize(NULL, hDlg, (HMENU)110, TEXT("TEST1"), hPict1, WndProc, &hWnd); //初期化
 			WinInitialize(NULL, hDlg, (HMENU)110, TEXT("TEST2"), hPict2, WndProc, &hWnd);
+
+			//データ読み込みスレッド起動
+			hThread1 = (HANDLE)_beginthreadex(NULL, 0, TFunc, (PVOID)&Sps1, 0, &thID1);   //_beginthreadex→スレッドを立ち上げる関数	
+			hThread2 = (HANDLE)_beginthreadex(NULL, 0, TFunc, (PVOID)&Sps2, 0, &thID2);
+			EnableWindow(GetDlgItem(hDlg, ID_START), FALSE);
+
 			return TRUE;
 
-		case ID_END:		//キャンセルボタン
-			EndDialog(hDlg, 0);		//ダイアログ終了
-			return TRUE;
+		case ID_STOP:				//停止ボタン
+			/*　サスペンドカウンタ　**************************
+						　　　実行を許可するまでスレッドを動かさない。
+						   　　ResumeThread：　サスペンドカウンタを1減らす
+							 　SuspendThread：　サスペンドカウンタを1増やす
 
+							  0のときは実行。それ以外は待機する。
+							  **************************************************/
+
+
+			if (ResumeThread(hThread1) == 0) {					//停止中かを調べる(サスペンドカウントを１減らす)
+				SetDlgItemText(hDlg, ID_STOP, TEXT("再開"));	//再開に変更　　　　　　　　　　　　　　　　　　　//SetDlgItemTextでダイアログ内のテキストなどを変更することができる
+				SuspendThread(hThread1);						//スレッドの実行を停止(サスペンドカウントを１増やす)
+			}
+			else
+				SetDlgItemText(hDlg, ID_STOP, TEXT("停止"));	//停止に変更
+
+			return TRUE;
 		}
 		break;
 
@@ -153,10 +148,12 @@ HRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	PAINTSTRUCT ps;					//(構造体)クライアント領域描画するための情報	
 	HBRUSH		hBrush, hOldBrush;	//ブラシ
 	HPEN		hPen, hOldPen;		//ペン
+	static RECT rect;
 
 	switch (uMsg) {
 	case WM_CREATE:
 		colorPen = RGB(255, 255, 255);	//色指定
+		color = RGB(0, 0, 0);
 		break;
 
 	case WM_PAINT:
@@ -211,6 +208,8 @@ HRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		  以上を参考に図形を描画する関数を以下に記述しましょう
 		********************************/
 		//ここから
+		GetClientRect(hWnd, &rect);
+		Rectangle(hdc, rect.left, rect.top, rect.right, rect.bottom);
 		MoveToEx(hdc, 30, 75, NULL);
 		LineTo(hdc, 700, 75);
 		MoveToEx(hdc, 30, 10, NULL);
@@ -242,7 +241,6 @@ HRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return TRUE;
 }
 
-//ここまで
 
 //-----------------------------------------------------------------------------
 //子ウィンドウ初期化＆生成
@@ -300,4 +298,58 @@ BOOL WinInitialize(HINSTANCE hInst, HWND hPaWnd, HMENU chID, LPCTSTR cWinName, H
 	}
 
 	return true;
+}
+
+//データ読み込み用スレッド
+UINT WINAPI TFunc(LPVOID thParam)
+{
+	static SEND_POINTER_STRUCT* FU = (SEND_POINTER_STRUCT*)thParam;        //構造体のポインタ取得
+
+	FILE* fp;			//ファイルポインタ
+	BOOL Flag = TRUE;		//ループフラグ
+	double data[2][DTMAX];		//データ
+	DWORD DNum = 0, beforeTime;
+	int time = 0, min = 0;
+	
+	beforeTime = timeGetTime();						//現在の時刻計算（初期時間）
+	
+	//ファイルオープン
+	if ((fopen_s(&fp, "data.txt", "r")) != 0) {
+		MessageBox(NULL, TEXT("ファイルを開けませんでした．"), NULL, MB_OK | MB_ICONERROR);
+		return FALSE;
+	}
+
+	int i = 0;
+	//データ読み込み・表示
+	while (Flag == TRUE) {
+		DWORD nowTime, progress, idealTime;
+
+		//時間の調整
+		nowTime = timeGetTime();					//現在の時刻計算
+		progress = nowTime - beforeTime;				//処理時間を計算
+		idealTime = (DWORD)(DNum * (1000.0 / (double)DEF_DATAPERS));	//理想時間を計算
+		if (idealTime > progress) {
+			Sleep(idealTime - progress);			//理想時間になるまで待機
+		}
+		//データの読み込み
+		if (fscanf_s(fp, "%lf\t%lf", &(data[0][i]), &(data[1][i])) == EOF) {
+			MessageBox(NULL, TEXT("終了"), TEXT("INFORMATION"), MB_OK | MB_ICONEXCLAMATION);
+			EnableWindow(GetDlgItem(FU->hwnd, ID_START), TRUE);		//開始ボタン有効
+			Flag = FALSE;												//ループ終了フラグ
+			return FALSE;
+		}
+
+		//表示
+
+		DNum++;
+
+		//一秒経過時
+		if (progress >= 1000.0) {
+			beforeTime = nowTime;
+			DNum = 0;
+		}
+		i++;
+	}
+	
+	return 0;
 }

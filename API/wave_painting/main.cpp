@@ -21,12 +21,12 @@ UINT WINAPI TFunc(LPVOID thParam);												//データ読み込み用スレッド
 #define DEF_DATAPERS 61.5				//1秒間に何データ入出力するか
 
 static COLORREF	color, colorPen;	//色
-static FILE *fp;
 
 //構造体
 typedef struct {
 	HWND	hwnd;
-	HWND	hEdit;
+	HWND	hEdit1;
+	HWND	hEdit2;
 }SEND_POINTER_STRUCT;
 
 //======================================
@@ -61,19 +61,22 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 ********************************/
 BOOL CALLBACK MainDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	static HWND hPict1, hPict2;		//ウィンドウハンドル（PictureBox）
 	static HWND hWnd;		//子ウィンドウハンドル
-	static HANDLE hThread1, hThread2;
-	static UINT thID1, thID2;
-	static SEND_POINTER_STRUCT Sps1, Sps2;
+	static HWND hPict1, hPict2;		//ウィンドウハンドル（PictureBox）
+	static HANDLE hThread;
+	static UINT thID;
+	static SEND_POINTER_STRUCT Sps;
+
+	
 
 	switch (uMsg) {
 	case WM_INITDIALOG:		//ダイアログ初期化(exeをダブルクリックした時)
-		Sps1.hwnd = Sps2.hwnd = hDlg;
+		Sps.hwnd = hDlg;
 		hPict1 = GetDlgItem(hDlg, IDC_PICTBOX1);
 		hPict2 = GetDlgItem(hDlg, IDC_PICTBOX2);
-		Sps1.hEdit = hPict1;
-		Sps2.hEdit = hPict2;
+		Sps.hEdit1 = hPict1;
+		Sps.hEdit2 = hPict2;
+		
 		return TRUE;
 
 	case WM_COMMAND:		//ボタンが押された時
@@ -85,9 +88,7 @@ BOOL CALLBACK MainDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			WinInitialize(NULL, hDlg, (HMENU)110, TEXT("TEST1"), hPict1, WndProc, &hWnd); //初期化
 			WinInitialize(NULL, hDlg, (HMENU)110, TEXT("TEST2"), hPict2, WndProc, &hWnd);
 
-			//データ読み込みスレッド起動
-			hThread1 = (HANDLE)_beginthreadex(NULL, 0, TFunc, (PVOID)&Sps1, 0, &thID1);   //_beginthreadex→スレッドを立ち上げる関数	
-			hThread2 = (HANDLE)_beginthreadex(NULL, 0, TFunc, (PVOID)&Sps2, 0, &thID2);
+			hThread = (HANDLE)_beginthreadex(NULL, 0, TFunc, (PVOID)&Sps, 0, &thID);   //_beginthreadex→スレッドを立ち上げる関数	
 			EnableWindow(GetDlgItem(hDlg, ID_START), FALSE);
 
 			return TRUE;
@@ -102,9 +103,9 @@ BOOL CALLBACK MainDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 							  **************************************************/
 
 
-			if (ResumeThread(hThread1) == 0) {					//停止中かを調べる(サスペンドカウントを１減らす)
+			if (ResumeThread(hThread) == 0) {					//停止中かを調べる(サスペンドカウントを１減らす)
 				SetDlgItemText(hDlg, ID_STOP, TEXT("再開"));	//再開に変更　　　　　　　　　　　　　　　　　　　//SetDlgItemTextでダイアログ内のテキストなどを変更することができる
-				SuspendThread(hThread1);						//スレッドの実行を停止(サスペンドカウントを１増やす)
+				SuspendThread(hThread);						//スレッドの実行を停止(サスペンドカウントを１増やす)
 			}
 			else
 				SetDlgItemText(hDlg, ID_STOP, TEXT("停止"));	//停止に変更
@@ -154,6 +155,7 @@ HRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_CREATE:
 		colorPen = RGB(255, 255, 255);	//色指定
 		color = RGB(0, 0, 0);
+		
 		break;
 
 	case WM_PAINT:
@@ -235,7 +237,9 @@ HRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		//デバイスコンテキストのハンドル破棄
 		EndPaint(hWnd, &ps);
+
 		break;
+
 	}
 
 	return TRUE;
@@ -307,11 +311,17 @@ UINT WINAPI TFunc(LPVOID thParam)
 
 	FILE* fp;			//ファイルポインタ
 	BOOL Flag = TRUE;		//ループフラグ
-	double data[2][DTMAX];		//データ
+	double data[2];		//データ
 	DWORD DNum = 0, beforeTime;
 	int time = 0, min = 0;
+	HDC			hdc1, hdc2;				//デバイスコンテキストのハンドル
+	PAINTSTRUCT ps1, ps2;					//(構造体)クライアント領域描画するための情報	
+	HPEN		hPen, hOldPen;		//ペン
+	static HWND hPict;				//ウィンドウハンドル（PictureBox）
+	RECT rect;
 	
 	beforeTime = timeGetTime();						//現在の時刻計算（初期時間）
+	hPict = GetDlgItem(FU->hwnd, IDC_PICTBOX1);
 	
 	//ファイルオープン
 	if ((fopen_s(&fp, "data.txt", "r")) != 0) {
@@ -319,11 +329,13 @@ UINT WINAPI TFunc(LPVOID thParam)
 		return FALSE;
 	}
 
-	int i = 0;
 	//データ読み込み・表示
+	int x = 0;
+	hdc1 = BeginPaint(FU->hEdit1, &ps1);
+	hdc2 = BeginPaint(FU->hEdit2, &ps2);
 	while (Flag == TRUE) {
 		DWORD nowTime, progress, idealTime;
-
+		/*
 		//時間の調整
 		nowTime = timeGetTime();					//現在の時刻計算
 		progress = nowTime - beforeTime;				//処理時間を計算
@@ -331,8 +343,9 @@ UINT WINAPI TFunc(LPVOID thParam)
 		if (idealTime > progress) {
 			Sleep(idealTime - progress);			//理想時間になるまで待機
 		}
+		*/
 		//データの読み込み
-		if (fscanf_s(fp, "%lf\t%lf", &(data[0][i]), &(data[1][i])) == EOF) {
+		if (fscanf_s(fp, "%lf\t%lf", &(data[0]), &(data[1])) == EOF) {
 			MessageBox(NULL, TEXT("終了"), TEXT("INFORMATION"), MB_OK | MB_ICONEXCLAMATION);
 			EnableWindow(GetDlgItem(FU->hwnd, ID_START), TRUE);		//開始ボタン有効
 			Flag = FALSE;												//ループ終了フラグ
@@ -341,6 +354,48 @@ UINT WINAPI TFunc(LPVOID thParam)
 
 		//表示
 
+
+		//ペン生成
+		/*
+		colorPen = RGB(0, 0, 255);
+		hPen = CreatePen(PS_SOLID, 2, colorPen);		//ペン生成
+		hOldPen = (HPEN)SelectObject(hdc, hPen);		//ペン設定
+		*/
+		//描画
+		/********************************
+
+		図形を描画するためには以下の関数を用います．
+		長方形：Rectangle(HDC hdc ,int nLeftRect , int nTopRect ,int nRightRect , int nBottomRect);
+		円：Ellipse(HDC hdc ,int nLeftRect , int nTopRect ,int nRightRect , int nBottomRect);
+
+		 nLiftRect：長方形の左上X座標
+		  nTopRect：左上Y座標
+		  nRightRect：右下X座標
+		  nBottomRect：右下のY座標
+
+		線を引くには以下の関数を用います．
+
+		線の始点設定：MoveToEx(HDC hdc , int X , int Y , NULL);
+		  X,Y：線の始点の座標
+		線；LineTo(HDC hdc , int nXEnd , int nYEnd);
+		  nXEnd, nYEnd：線の終点の設定
+
+
+		  以上を参考に図形を描画する関数を以下に記述しましょう
+		********************************/
+		//ここから
+		SetPixel(hdc1, x, 30, RGB(163, 199, 230));
+		SetPixel(hdc2, x, 30, RGB(163, 199, 230));
+		Sleep(10);
+
+		//ここまで
+		//ペン廃棄
+		//SelectObject(hdc, hOldPen);
+		//DeleteObject(hPen);
+
+		//デバイスコンテキストのハンドル破棄
+		//EndPaint(hPict, &ps);
+		/*
 		DNum++;
 
 		//一秒経過時
@@ -348,8 +403,11 @@ UINT WINAPI TFunc(LPVOID thParam)
 			beforeTime = nowTime;
 			DNum = 0;
 		}
-		i++;
+		*/
+		x++;
 	}
-	
+	EndPaint(FU->hEdit1, &ps1);
+	EndPaint(FU->hEdit2, &ps2);
+
 	return 0;
 }

@@ -1,0 +1,4 @@
+C:\Users\tsuba\デスクトップ\api\wave_painting\Debug\wave_painting.exe
+C:\Users\tsuba\デスクトップ\api\wave_painting\Debug\wave_painting.pdb
+C:\Users\tsuba\Documents\GitHub\api\API\wave_painting\Debug\wave_painting.exe
+C:\Users\tsuba\Documents\GitHub\api\API\wave_painting\Debug\wave_painting.pdb

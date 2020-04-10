@@ -23,7 +23,7 @@ void PaintAxis(HWND hWnd, COLORREF color, COLORREF colorPen);					//軸描画
 #define YMAX 130						//描画領域のy座標の最大値
 #define Y_OFFSET 136					//描画領域のy=0に相当する座標
 #define DTMAX 1.8						//データの最大値
-#define DEF_DATAPERS 1000				//1秒間に何データ入出力するか
+#define DEF_DATAPERS 300				//1秒間に何データ入出力するか
 
 static COLORREF color, colorPen;	//色
 
@@ -68,7 +68,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 ********************************/
 BOOL CALLBACK MainDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	static HWND hWnd;		//子ウィンドウハンドル
+	static HWND hWnd1, hWnd2, hWnd3, hWnd4;		//子ウィンドウハンドル
 	static HWND hPict1, hPict2, hPict3, hPict4;		//ウィンドウハンドル（PictureBox）
 	static HANDLE hThread;
 	static UINT thID;
@@ -83,11 +83,12 @@ BOOL CALLBACK MainDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		hPict2 = GetDlgItem(hDlg, IDC_PICTBOX2);
 		hPict3 = GetDlgItem(hDlg, IDC_PICTBOX3);
 		hPict4 = GetDlgItem(hDlg, IDC_PICTBOX4);
+		/*
 		Sps.hEdit1 = hPict1;
 		Sps.hEdit2 = hPict2;
 		Sps.hEdit3 = hPict3;
 		Sps.hEdit4 = hPict4;
-		
+		*/
 		return TRUE;
 
 	case WM_COMMAND:		//ボタンが押された時
@@ -96,12 +97,17 @@ BOOL CALLBACK MainDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	   ********/
 		switch (LOWORD(wParam)) {
 		case ID_START:			//開始ボタン
-			WinInitialize(NULL, hDlg, (HMENU)110, TEXT("TEST1"), hPict1, WndProc, &hWnd); //初期化
-			WinInitialize(NULL, hDlg, (HMENU)110, TEXT("TEST2"), hPict2, WndProc, &hWnd);
-			WinInitialize(NULL, hDlg, (HMENU)110, TEXT("TEST3"), hPict3, WndProc, &hWnd);
-			WinInitialize(NULL, hDlg, (HMENU)110, TEXT("TEST4"), hPict4, WndProc, &hWnd);
 
-			hThread = (HANDLE)_beginthreadex(NULL, 0, TFunc, (PVOID)&Sps, 0, &thID);   //_beginthreadex→スレッドを立ち上げる関数	
+			WinInitialize(NULL, hDlg, (HMENU)110, TEXT("TEST1"), hPict1, WndProc, &hWnd1); //初期化
+			Sps.hEdit1 = hWnd1;
+			WinInitialize(NULL, hDlg, (HMENU)110, TEXT("TEST2"), hPict2, WndProc, &hWnd2);
+			Sps.hEdit2 = hWnd2;
+			WinInitialize(NULL, hDlg, (HMENU)110, TEXT("TEST3"), hPict3, WndProc, &hWnd3);
+			Sps.hEdit3 = hWnd3;
+			WinInitialize(NULL, hDlg, (HMENU)110, TEXT("TEST4"), hPict4, WndProc, &hWnd4);
+			Sps.hEdit4 = hWnd4;
+	
+			hThread = (HANDLE)_beginthreadex(NULL, 0, TFunc, (PVOID)&Sps, 0, &thID);   //_beginthreadex→スレッドを立ち上げる関数
 			EnableWindow(GetDlgItem(hDlg, ID_START), FALSE);
 
 			return TRUE;
@@ -117,7 +123,7 @@ BOOL CALLBACK MainDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 
 			if (ResumeThread(hThread) == 0) {					//停止中かを調べる(サスペンドカウントを１減らす)
-				SetDlgItemText(hDlg, ID_STOP, TEXT("再開"));	//再開に変更　　　　　　　　　　　　　　　　　　　//SetDlgItemTextでダイアログ内のテキストなどを変更することができる
+				SetDlgItemText(hDlg, ID_STOP, TEXT("再開"));	//再開に変更
 				SuspendThread(hThread);						//スレッドの実行を停止(サスペンドカウントを１増やす)
 			}
 			else
@@ -136,12 +142,17 @@ BOOL CALLBACK MainDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		EndDialog(hDlg, 0);			//ダイアログ終了
 		return TRUE;
 	}
-
-	SendMessage(hWnd, uMsg, wParam, lParam);
+	SendMessage(hWnd1, uMsg, wParam, lParam);
+	SendMessage(hWnd2, uMsg, wParam, lParam);
+	SendMessage(hWnd3, uMsg, wParam, lParam);
+	SendMessage(hWnd4, uMsg, wParam, lParam);
 
 	//オーナー描画後に再描画
 	if (uMsg == WM_PAINT) {
-		InvalidateRect(hWnd, NULL, TRUE);	//再描画
+		InvalidateRect(hWnd1, NULL, TRUE);	//再描画
+		InvalidateRect(hWnd2, NULL, TRUE);
+		InvalidateRect(hWnd3, NULL, TRUE);
+		InvalidateRect(hWnd4, NULL, TRUE);
 	}
 
 	return FALSE;
@@ -162,11 +173,6 @@ HRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		colorPen = RGB(255, 255, 255);	//色指定
 		color = RGB(0, 0, 0);
 		
-		break;
-
-	case WM_PAINT:
-		PaintAxis(hWnd, color, colorPen);
-
 		break;
 
 	}
@@ -251,8 +257,8 @@ UINT WINAPI TFunc(LPVOID thParam)
 	PAINTSTRUCT ps1, ps2, ps3, ps4;			//(構造体)クライアント領域描画するための情報	
 	HPEN hPen1, hPen2, hPen3, hPen4;			//ペン
 	
-	beforeTime = timeGetTime();						//現在の時刻計算（初期時間）
-	
+	beforeTime = timeGetTime();				//現在の時刻計算（初期時間）
+
 	//ファイルオープン
 	if ((fopen_s(&fp, "C:\\Users\\tsuba\\Documents\\GitHub\\api\\data_4ch.txt", "r")) != 0) {
 		MessageBox(NULL, TEXT("ファイルを開けませんでした．"), NULL, MB_OK | MB_ICONERROR);
@@ -262,7 +268,7 @@ UINT WINAPI TFunc(LPVOID thParam)
 
 	//データ読み込み・波形描画
 	int x = 0;									//x座標
-	colorPen = RGB(163, 199, 230);				//線の色
+	colorPen = RGB(255, 255, 0);				//線の色
 	hdc1 = BeginPaint(FU->hEdit1, &ps1);
 	hdc2 = BeginPaint(FU->hEdit2, &ps2);
 	hdc3 = BeginPaint(FU->hEdit3, &ps3);
@@ -276,6 +282,17 @@ UINT WINAPI TFunc(LPVOID thParam)
 	hPen4 = CreatePen(PS_SOLID, 2, colorPen);
 	SelectObject(hdc4, hPen4);
 
+	color = RGB(0, 0, 0);
+	colorPen = RGB(255, 255, 255);
+	InvalidateRect(FU->hEdit1, NULL, TRUE);
+	PaintAxis(FU->hEdit1, color, colorPen);
+	InvalidateRect(FU->hEdit2, NULL, TRUE);
+	PaintAxis(FU->hEdit2, color, colorPen);
+	InvalidateRect(FU->hEdit3, NULL, TRUE);
+	PaintAxis(FU->hEdit3, color, colorPen);
+	InvalidateRect(FU->hEdit4, NULL, TRUE);
+	PaintAxis(FU->hEdit4, color, colorPen);
+
 	while (Flag == TRUE) {
 		//時間の調整
 		nowTime = timeGetTime();					//現在の時刻計算
@@ -284,6 +301,13 @@ UINT WINAPI TFunc(LPVOID thParam)
 		if (idealTime > progress) {
 			Sleep(idealTime - progress);			//理想時間になるまで待機
 		}
+
+		DNum++;
+		//一秒経過時
+		if (progress >= 1000.0) {
+			beforeTime = nowTime;
+			DNum = 0;
+		}
 		
 		//データの読み込み
 		if (fscanf_s(fp, "%d\t%lf\t%lf\t%lf\t%lf",&t, &(data[0]), &(data[1]), &(data[2]), &(data[3])) == EOF) {
@@ -291,13 +315,6 @@ UINT WINAPI TFunc(LPVOID thParam)
 			EnableWindow(GetDlgItem(FU->hwnd, ID_START), TRUE);		//開始ボタン有効
 			Flag = FALSE;											//ループ終了フラグ
 			return FALSE;
-		}
-
-		DNum++;
-		//一秒経過時
-		if (progress >= 1000.0) {
-			beforeTime = nowTime;
-			DNum = 0;
 		}
 
 		if (x == 0) {

@@ -236,7 +236,6 @@ UINT WINAPI TFunc(LPVOID thParam)
 	int time = 0;
 	HDC	hdc1, hdc2;				//デバイスコンテキストのハンドル
 	PAINTSTRUCT ps1, ps2;					//(構造体)クライアント領域描画するための情報	
-	static HWND hPict;				//ウィンドウハンドル（PictureBox）
 	HPEN hPen1, hPen2;			//ペン
 	
 	beforeTime = timeGetTime();						//現在の時刻計算（初期時間）

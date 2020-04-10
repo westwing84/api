@@ -29,4 +29,9 @@
       <Filter>リソース ファイル</Filter>
     </ResourceCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="data_4ch.txt">
+      <Filter>ソース ファイル</Filter>
+    </Text>
+  </ItemGroup>
 </Project>

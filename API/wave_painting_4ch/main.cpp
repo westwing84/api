@@ -260,7 +260,7 @@ UINT WINAPI TFunc(LPVOID thParam)
 	beforeTime = timeGetTime();				//現在の時刻計算（初期時間）
 
 	//ファイルオープン
-	if ((fopen_s(&fp, "C:\\Users\\tsuba\\Documents\\GitHub\\api\\data_4ch.txt", "r")) != 0) {
+	if ((fopen_s(&fp, "data_4ch.txt", "r")) != 0) {
 		MessageBox(NULL, TEXT("ファイルを開けませんでした．"), NULL, MB_OK | MB_ICONERROR);
 		return FALSE;
 	}

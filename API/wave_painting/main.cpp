@@ -64,7 +64,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 ********************************/
 BOOL CALLBACK MainDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	static HWND hWnd;		//子ウィンドウハンドル
+	static HWND hWnd1, hWnd2;		//子ウィンドウハンドル
 	static HWND hPict1, hPict2;		//ウィンドウハンドル（PictureBox）
 	static HANDLE hThread;
 	static UINT thID;
@@ -77,8 +77,6 @@ BOOL CALLBACK MainDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		Sps.hwnd = hDlg;
 		hPict1 = GetDlgItem(hDlg, IDC_PICTBOX1);
 		hPict2 = GetDlgItem(hDlg, IDC_PICTBOX2);
-		Sps.hEdit1 = hPict1;
-		Sps.hEdit2 = hPict2;
 		
 		return TRUE;
 
@@ -88,8 +86,11 @@ BOOL CALLBACK MainDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	   ********/
 		switch (LOWORD(wParam)) {
 		case ID_START:			//開始ボタン
-			WinInitialize(NULL, hDlg, (HMENU)110, TEXT("TEST1"), hPict1, WndProc, &hWnd); //初期化
-			WinInitialize(NULL, hDlg, (HMENU)110, TEXT("TEST2"), hPict2, WndProc, &hWnd);
+			WinInitialize(NULL, hDlg, (HMENU)110, TEXT("TEST1"), hPict1, WndProc, &hWnd1); //初期化
+			WinInitialize(NULL, hDlg, (HMENU)110, TEXT("TEST2"), hPict2, WndProc, &hWnd2);
+
+			Sps.hEdit1 = hWnd1;
+			Sps.hEdit2 = hWnd2;
 
 			hThread = (HANDLE)_beginthreadex(NULL, 0, TFunc, (PVOID)&Sps, 0, &thID);   //_beginthreadex→スレッドを立ち上げる関数	
 			EnableWindow(GetDlgItem(hDlg, ID_START), FALSE);
@@ -127,11 +128,13 @@ BOOL CALLBACK MainDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		return TRUE;
 	}
 
-	SendMessage(hWnd, uMsg, wParam, lParam);
+	SendMessage(hWnd1, uMsg, wParam, lParam);
+	SendMessage(hWnd2, uMsg, wParam, lParam);
 
 	//オーナー描画後に再描画
 	if (uMsg == WM_PAINT) {
-		InvalidateRect(hWnd, NULL, TRUE);	//再描画
+		InvalidateRect(hWnd1, NULL, TRUE);	//再描画
+		InvalidateRect(hWnd2, NULL, TRUE);
 	}
 
 	return FALSE;
@@ -153,12 +156,6 @@ HRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		color = RGB(0, 0, 0);
 		
 		break;
-
-	case WM_PAINT:
-		PaintAxis(hWnd, color, colorPen);
-
-		break;
-
 	}
 
 	return TRUE;
@@ -239,6 +236,7 @@ UINT WINAPI TFunc(LPVOID thParam)
 	HPEN hPen1, hPen2;			//ペン
 	
 	beforeTime = timeGetTime();						//現在の時刻計算（初期時間）
+
 	
 	//ファイルオープン
 	if ((fopen_s(&fp, "data.txt", "r")) != 0) {
@@ -255,6 +253,14 @@ UINT WINAPI TFunc(LPVOID thParam)
 	SelectObject(hdc1, hPen1);
 	hPen2 = CreatePen(PS_SOLID, 2, colorPen);
 	SelectObject(hdc2, hPen2);
+
+	colorPen = RGB(255, 255, 255);
+	color = RGB(0, 0, 0);
+	InvalidateRect(FU->hEdit1, NULL, TRUE);
+	PaintAxis(FU->hEdit1, color, colorPen);
+	InvalidateRect(FU->hEdit2, NULL, TRUE);
+	PaintAxis(FU->hEdit2, color, colorPen);
+
 
 	while (Flag == TRUE) {
 		//時間の調整

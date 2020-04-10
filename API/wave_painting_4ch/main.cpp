@@ -83,12 +83,7 @@ BOOL CALLBACK MainDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		hPict2 = GetDlgItem(hDlg, IDC_PICTBOX2);
 		hPict3 = GetDlgItem(hDlg, IDC_PICTBOX3);
 		hPict4 = GetDlgItem(hDlg, IDC_PICTBOX4);
-		/*
-		Sps.hEdit1 = hPict1;
-		Sps.hEdit2 = hPict2;
-		Sps.hEdit3 = hPict3;
-		Sps.hEdit4 = hPict4;
-		*/
+
 		return TRUE;
 
 	case WM_COMMAND:		//ƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚½Žž

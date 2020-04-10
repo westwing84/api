@@ -1,0 +1,2 @@
+C:\Users\tsuba\Documents\GitHub\api\API\wave_painting_4ch\Debug\wave_painting_4ch.exe
+C:\Users\tsuba\Documents\GitHub\api\API\wave_painting_4ch\Debug\wave_painting_4ch.pdb
